@@ -1,5 +1,4 @@
 ﻿using LSC.OnlineCourse.Core.Entities;
-using LSC.OnlineCourse.Core.Models;
 using LSC.OnlineCourse.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;

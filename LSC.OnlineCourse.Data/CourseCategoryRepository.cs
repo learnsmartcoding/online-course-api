@@ -1,33 +1,14 @@
 ﻿using LSC.OnlineCourse.Core.Entities;
 using LSC.OnlineCourse.Data.Entities;
 using Microsoft.EntityFrameworkCore;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
 
 namespace LSC.OnlineCourse.Data
 {
-    /*
-    //All these are called syn methods, we will learn about async methods.
-    //this is primary constructor and available from .net 8
-    public class CourseCategoryRepository(OnlineCourseDbContext dbContext) : ICourseCategoryRepository
-    {
-        private readonly OnlineCourseDbContext dbContext = dbContext;
-
-        //this means if a record not present it will return null, nulable return type
-        public CourseCategory? GetById(int id)
-        {
-            //find is the sync method will try to find record with its primary key
-            var data = dbContext.CourseCategories.Find(id); 
-            return data;
-        }
-
-        public List<CourseCategory> GetCourseCategories()
-        {
-            var data = dbContext.CourseCategories.ToList();
-            return data;
-        }
-    }
-
-    */
-
     public class CourseCategoryRepository : ICourseCategoryRepository
     {
         private readonly OnlineCourseDbContext dbContext;
@@ -36,17 +17,14 @@ namespace LSC.OnlineCourse.Data
         {
             this.dbContext = dbContext;
         }
-        public Task<CourseCategory?> GetByIdAsync(int id)
+        public Task<CourseCategory?> GetById(int id)
         {
-            //as long as we dont nee data immediately, we can return task itself. we will see more example
-            var data = dbContext.CourseCategories.FindAsync(id).AsTask();
-            return data;
+           return dbContext.CourseCategories.FindAsync(id).AsTask();
         }
 
-        public Task<List<CourseCategory>> GetCourseCategoriesAsync()
+        public Task<List<CourseCategory>> GetCourseCategories()
         {
-            var data = dbContext.CourseCategories.ToListAsync();
-            return data;
+            return dbContext.CourseCategories.ToListAsync();
         }
     }
 }
