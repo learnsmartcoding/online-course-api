@@ -44,24 +44,14 @@ CREATE TABLE Roles (
     CONSTRAINT PK_Roles_RoleId PRIMARY KEY (RoleId)
 );
 
-
--- SmartApp Table
-CREATE TABLE SmartApp (
-    SmartAppId INT IDENTITY(1,1),    
-    AppName NVARCHAR(50) NOT NULL,    
-    CONSTRAINT PK_SmartApp_SmartAppId PRIMARY KEY (SmartAppId)
-);
-
 -- UserRole Table
 CREATE TABLE UserRole (
     UserRoleId INT IDENTITY(1,1),
     RoleId INT NOT NULL,
-    UserId INT NOT NULL,    
-	SmartAppId INT NOT NULL,
+    UserId INT NOT NULL,        
     CONSTRAINT PK_UserRole_UserRoleId PRIMARY KEY (UserRoleId),
     CONSTRAINT FK_UserRole_UserProfile FOREIGN KEY (UserId) REFERENCES UserProfile(UserId),
-    CONSTRAINT FK_UserRole_Roles FOREIGN KEY (RoleId) REFERENCES Roles(RoleId),
-	CONSTRAINT FK_UserRole_SmartApp FOREIGN KEY (SmartAppId) REFERENCES SmartApp(SmartAppId)
+    CONSTRAINT FK_UserRole_Roles FOREIGN KEY (RoleId) REFERENCES Roles(RoleId)
 );
 
 -- CourseCategory Table
@@ -169,19 +159,11 @@ VALUES
 ('Instructor'),
 ('Student');
 
-
-INSERT INTO SmartApp (AppName)
+INSERT INTO UserRole (RoleId, UserId)
 VALUES 
-('Online_Course'),
-('Expense_Tracker');
-
-DECLARE @appId int = (select SmartAppId from SmartApp where AppName= 'Online_Course')
-INSERT INTO UserRole (RoleId, UserId, SmartAppId)
-VALUES 
-(1, 1,@appId), -- John Doe as Admin
-(2, 2,@appId), -- Jane Smith as Instructor
-(3, 3, @appId); -- Alice Johnson as Student
-
+(1, 1), -- John Doe as Admin
+(2, 2), -- Jane Smith as Instructor
+(3, 3); -- Alice Johnson as Student
 
 INSERT INTO CourseCategory (CategoryName, Description)
 VALUES 
@@ -244,11 +226,11 @@ VALUES
 ('Instructor'),
 ('Student');
 
-INSERT INTO UserRole (RoleId, UserId, SmartAppId)
+INSERT INTO UserRole (RoleId, UserId)
 VALUES 
-(1, 4,@appId), -- Michael Brown as Admin
-(2, 5,@appId), -- Laura White as Instructor
-(3, 6,@appId); -- David Green as Student
+(1, 4), -- Michael Brown as Admin
+(2, 5), -- Laura White as Instructor
+(3, 6); -- David Green as Student
 
 INSERT INTO CourseCategory (CategoryName, Description)
 VALUES 
@@ -310,11 +292,11 @@ VALUES
 ('Instructor'),
 ('Student');
 
-INSERT INTO UserRole (RoleId, UserId, SmartAppId)
+INSERT INTO UserRole (RoleId, UserId)
 VALUES 
-(1, 7,@appId), -- Emma Wilson as Admin
-(2, 8,@appId), -- Chris Taylor as Instructor
-(3, 9,@appId); -- Sophia Davis as Student
+(1, 7), -- Emma Wilson as Admin
+(2, 8), -- Chris Taylor as Instructor
+(3, 9); -- Sophia Davis as Student
 
 INSERT INTO CourseCategory (CategoryName, Description)
 VALUES 
@@ -428,11 +410,3 @@ VALUES
 ((SELECT CourseId FROM Course WHERE Title = 'Digital Marketing Masterclass'), 'SEO Strategies', 'Optimizing content for search engines.', 'https://example.com/dm-seo', 2),
 ((SELECT CourseId FROM Course WHERE Title = 'Digital Marketing Masterclass'), 'Social Media Marketing', 'Using social media platforms for marketing.', 'https://example.com/dm-socialmedia', 3),
 ((SELECT CourseId FROM Course WHERE Title = 'Digital Marketing Masterclass'), 'Email Marketing Campaigns', 'Designing and executing email marketing campaigns.', 'https://example.com/dm-email', 4);
-
-
-update SessionDetails set VideoUrl = 'https://www.youtube.com/watch?v=70q8PanGbnw'
-where CourseId=1
-
-update SessionDetails set 
-VideoUrl = 'https://www.youtube.com/watch?v=fqI0ToX1nDQ'
-where CourseId<>1

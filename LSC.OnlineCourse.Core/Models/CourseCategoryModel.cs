@@ -6,7 +6,6 @@ using System.Threading.Tasks;
 
 namespace LSC.OnlineCourse.Core.Models
 {
-    //This is the model class exposed to customer so we should not use our entity class directly
     public class CourseCategoryModel
     {
         public int CategoryId { get; set; }

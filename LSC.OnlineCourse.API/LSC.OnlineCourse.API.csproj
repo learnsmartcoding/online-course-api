@@ -16,6 +16,16 @@
 		  <PrivateAssets>all</PrivateAssets>
 		  <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
 	  </PackageReference>
+
+	  <PackageReference Include="Serilog.Expressions" Version="4.0.0" />
+	  <PackageReference Include="Serilog.AspNetCore" Version="8.0.0" />
+	  <PackageReference Include="Serilog.Sinks.ApplicationInsights" Version="4.0.0" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="8.0.0" />
+	  <PackageReference Include="Microsoft.ApplicationInsights.AspNetCore" Version="2.21.0" />
+	  <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="7.0.9" />
+
+	  <PackageReference Include="Microsoft.Identity.Web" Version="1.25.1" />
+
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\LSC.OnlineCourse.Core\LSC.OnlineCourse.Core.csproj" />
