@@ -1,11 +1,13 @@
 using LSC.OnlineCourse.Data.Entities;
 using LSC.OnlineCourse.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 
 namespace LSC.OnlineCourse.API.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
+    [AllowAnonymous]
     public class CourseCategoryController : ControllerBase
     {        
 
