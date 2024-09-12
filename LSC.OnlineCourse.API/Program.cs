@@ -1,3 +1,4 @@
+using LSC.OnlineCourse.API.Common;
 using LSC.OnlineCourse.API.Middlewares;
 using LSC.OnlineCourse.Data;
 using LSC.OnlineCourse.Data.Entities;
@@ -48,40 +49,48 @@ namespace LSC.OnlineCourse.API
                 Log.Information("Starting the SmartLearnByKarthik API...");
 
                 #region AD B2C configuration
-                // Adds Microsoft Identity platform (AAD v2.0) support to protect this Api
                 builder.Services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
-                        .AddMicrosoftIdentityWebApi(options =>
+                  .AddMicrosoftIdentityWebApi(options =>
+                  {
+                      configuration.Bind("AzureAdB2C", options);
 
-                        {
-                            configuration.Bind("AzureAdB2C", options);
-                            options.Events = new JwtBearerEvents();
+                      options.Events = new JwtBearerEvents
+                      {
+                          OnTokenValidated = context =>
+                          {
+                              var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
 
-                            /// <summary>
-                            /// Below you can do extended token validation and check for additional claims, such as:
-                            ///
-                            /// - check if the caller's account is homed or guest via the 'acct' optional claim
-                            /// - check if the caller belongs to right roles or groups via the 'roles' or 'groups' claim, respectively
-                            ///
-                            /// Bear in mind that you can do any of the above checks within the individual routes and/or controllers as well.
-                            /// For more information, visit: https://docs.microsoft.com/azure/active-directory/develop/access-tokens#validate-the-user-has-permission-to-access-this-data
-                            /// </summary>
+                              // Access the scope claim (scp) directly
+                              var scopeClaim = context.Principal?.Claims.FirstOrDefault(c => c.Type == "scp")?.Value;
 
-                            //options.Events.OnTokenValidated = async context =>
-                            //{
-                            //    string[] allowedClientApps = { /* list of client ids to allow */ };
+                              if (scopeClaim != null)
+                              {
+                                  logger.LogInformation("Scope found in token: {Scope}", scopeClaim);
+                              }
+                              else
+                              {
+                                  logger.LogWarning("Scope claim not found in token.");
+                              }
 
-                            //    string clientAppId = context?.Principal?.Claims
-                            //        .FirstOrDefault(x => x.Type == "azp" || x.Type == "appid")?.Value;
-
-                            //    if (!allowedClientApps.Contains(clientAppId))
-                            //    {
-                            //        throw new System.Exception("This client is not authorized");
-                            //    }
-                            //};
-                        }, options => { configuration.Bind("AzureAdB2C", options); });
+                              return Task.CompletedTask;
+                          },
+                          OnAuthenticationFailed = context =>
+                          {
+                              var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                              logger.LogError("Authentication failed: {Message}", context.Exception.Message);
+                              return Task.CompletedTask;
+                          },
+                          OnChallenge = context =>
+                          {
+                              var logger = context.HttpContext.RequestServices.GetRequiredService<ILogger<Program>>();
+                              logger.LogError("Challenge error: {ErrorDescription}", context.ErrorDescription);
+                              return Task.CompletedTask;
+                          }
+                      };
+                  }, options => { configuration.Bind("AzureAdB2C", options); });
 
                 // The following flag can be used to get more descriptive errors in development environments
-                IdentityModelEventSource.ShowPII = false;
+                IdentityModelEventSource.ShowPII = true;
                 #endregion  AD B2C configuration
 
                 //DB configuration goes here
@@ -96,7 +105,7 @@ namespace LSC.OnlineCourse.API
                     );
                     //options.EnableSensitiveDataLogging();
                     options.EnableDetailedErrors();
-                    
+
                 });
 
 
@@ -113,6 +122,10 @@ namespace LSC.OnlineCourse.API
                 builder.Services.AddControllers();
                 // Learn more about configuring Swagger/OpenAPI at https://aka.ms/aspnetcore/swashbuckle
 
+                builder.Services.AddAutoMapper(typeof(MappingProfile));
+                builder.Services.AddScoped<IVideoRequestRepository, VideoRequestRepository>();
+                builder.Services.AddScoped<IVideoRequestService, VideoRequestService>();
+
                 builder.Services.AddScoped<ICourseCategoryRepository, CourseCategoryRepository>();
                 builder.Services.AddScoped<ICourseCategoryService, CourseCategoryService>();
                 builder.Services.AddScoped<ICourseRepository, CourseRepository>();
@@ -120,7 +133,7 @@ namespace LSC.OnlineCourse.API
 
                 builder.Services.AddTransient<RequestBodyLoggingMiddleware>();
                 builder.Services.AddTransient<ResponseBodyLoggingMiddleware>();
-
+                builder.Services.AddScoped<IUserClaims, UserClaims>();
 
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
@@ -129,6 +142,9 @@ namespace LSC.OnlineCourse.API
 
                 #region Middlewares
                 var app = builder.Build();
+
+                // Configure the HTTP request pipeline.
+                app.UseCors("default");
 
                 app.UseExceptionHandler(errorApp =>
                 {
@@ -144,23 +160,17 @@ namespace LSC.OnlineCourse.API
                     });
                 });
 
-
                 app.UseMiddleware<RequestResponseLoggingMiddleware>();
-                // Enable our custom middleware
                 app.UseMiddleware<RequestBodyLoggingMiddleware>();
                 app.UseMiddleware<ResponseBodyLoggingMiddleware>();
 
-                app.UseCors("default");
-                // Configure the HTTP request pipeline.
-                //if (app.Environment.IsDevelopment())
+                if (app.Environment.IsDevelopment())
                 {
                     app.UseSwagger();
                     app.UseSwaggerUI();
                 }
 
-                app.UseHttpsRedirection();
-
-                app.UseAuthorization();
+                app.UseRouting();
 
                 #region AD B2C
                 app.UseAuthentication();

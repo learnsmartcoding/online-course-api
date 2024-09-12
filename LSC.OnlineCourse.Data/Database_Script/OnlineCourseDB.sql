@@ -456,6 +456,7 @@ where CourseId<>1
 
 
 -- below is used to trigger a azure function when a table's record modified or added
+--https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-azure-sql-trigger?tabs=isolated-process%2Cpython-v2%2Cportal&pivots=programming-language-csharp
 Go
 ALTER DATABASE OnlineCourseDB
 SET CHANGE_TRACKING = ON

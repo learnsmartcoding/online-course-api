@@ -24,4 +24,6 @@ public partial class UserProfile
     public virtual ICollection<Review> Reviews { get; set; } = new List<Review>();
 
     public virtual ICollection<UserRole> UserRoles { get; set; } = new List<UserRole>();
+
+    public virtual ICollection<VideoRequest> VideoRequests { get; set; } = new List<VideoRequest>();
 }

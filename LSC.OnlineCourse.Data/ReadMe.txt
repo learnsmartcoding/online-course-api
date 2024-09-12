@@ -20,7 +20,7 @@ dotnet tool uninstall --global dotnet-ef
 
 To Scaffold database as model to local project use below cmd.
 
-dotnet ef dbcontext scaffold "Server=Karthik;Initial Catalog=ExpenseTracker;Integrated Security=SSPI; MultipleActiveResultSets=true;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -o Entities -d
+dotnet ef dbcontext scaffold "Server=Karthik;Initial Catalog=OnlineCourseDB;Integrated Security=SSPI; MultipleActiveResultSets=true;TrustServerCertificate=True;" Microsoft.EntityFrameworkCore.SqlServer -o Entities -d
 
 
 use this for locally installed SQL Express Dev DB
