@@ -8,6 +8,7 @@
 
 	<!--This is the place packages gets added, you can install using nuget package manager or directly place the package details here.-->
   <ItemGroup>
+    <PackageReference Include="AutoMapper" Version="13.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.8" />
 	  <PackageReference Include="Microsoft.VisualStudio.Azure.Containers.Tools.Targets" Version="1.21.0" />
 	  <PackageReference Include="Swashbuckle.AspNetCore" Version="6.7.0" />
