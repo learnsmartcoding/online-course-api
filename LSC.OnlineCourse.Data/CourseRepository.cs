@@ -5,15 +5,15 @@ using Microsoft.EntityFrameworkCore;
 
 namespace LSC.OnlineCourse.Data
 {
-    public class CourseRepository: ICourseRepository
+    public class CourseRepository : ICourseRepository
     {
         private readonly OnlineCourseDbContext dbContext;
 
         public CourseRepository(OnlineCourseDbContext dbContext)
         {
             this.dbContext = dbContext;
-        }    
-        
+        }
+
 
         public async Task<CourseDetailModel> GetCourseDetailAsync(int courseId)
         {
@@ -33,8 +33,10 @@ namespace LSC.OnlineCourse.Data
                     Duration = c.Duration,
                     CategoryId = c.CategoryId,
                     InstructorId = c.InstructorId,
+                    InstructorUserId = c.Instructor.UserId,
                     StartDate = c.StartDate,
                     EndDate = c.EndDate,
+                    Thumbnail = c.Thumbnail,
                     Category = new CourseCategoryModel
                     {
                         CategoryId = c.Category.CategoryId,
@@ -44,6 +46,8 @@ namespace LSC.OnlineCourse.Data
                     Reviews = c.Reviews.Select(r => new UserReviewModel
                     {
                         CourseId = r.CourseId,
+                        ReviewId = r.ReviewId,
+                        UserId = r.UserId, 
                         UserName = r.User.DisplayName,
                         Rating = r.Rating,
                         Comments = r.Comments,
@@ -95,6 +99,8 @@ namespace LSC.OnlineCourse.Data
                     Duration = s.Duration,
                     CategoryId = s.CategoryId,
                     InstructorId = s.InstructorId,
+                    Thumbnail = s.Thumbnail,
+                    InstructorUserId = s.Instructor.UserId,
                     StartDate = s.StartDate,
                     EndDate = s.EndDate,
                     Category = new CourseCategoryModel
@@ -115,6 +121,53 @@ namespace LSC.OnlineCourse.Data
             return courses;
         }
 
-      
+        public async Task AddCourseAsync(Course course)
+        {
+            await dbContext.Courses.AddAsync(course);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task UpdateCourseAsync(Course course)
+        {
+            dbContext.Courses.Update(course);
+            await dbContext.SaveChangesAsync();
+        }
+
+        public async Task DeleteCourseAsync(int courseId)
+        {
+            var course = await GetCourseByIdAsync(courseId);
+            if (course != null)
+            {
+                dbContext.Courses.Remove(course);
+                await dbContext.SaveChangesAsync();
+            }
+        }
+        public async Task<Course> GetCourseByIdAsync(int courseId)
+        {
+            return await dbContext.Courses
+                .Include(c => c.SessionDetails)
+                //.Include(c => c.Category)
+                .FirstOrDefaultAsync(c => c.CourseId == courseId);
+        }
+        public void RemoveSessionDetail(SessionDetail sessionDetail)
+        {
+            dbContext.SessionDetails.Remove(sessionDetail);
+        }
+
+        public Task<List<Instructor>> GetAllInstructorsAsync()
+        {
+            return dbContext.Instructors.ToListAsync();
+        }
+
+        public async Task<bool> UpdateCourseThumbnail(string courseThumbnailUrl, int courseId)
+        {
+            var course = await dbContext.Courses.FindAsync(courseId);
+            if (course != null)
+            {
+                course.Thumbnail = courseThumbnailUrl;
+            }
+
+            return await dbContext.SaveChangesAsync() > 0;
+        }
     }
 }

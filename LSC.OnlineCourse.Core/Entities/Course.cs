@@ -26,6 +26,7 @@ public partial class Course
     public DateTime? StartDate { get; set; }
 
     public DateTime? EndDate { get; set; }
+    public string? Thumbnail { get; set; }
 
     public virtual CourseCategory Category { get; set; } = null!;
 

@@ -3,10 +3,13 @@ using LSC.OnlineCourse.API.Middlewares;
 using LSC.OnlineCourse.Data;
 using LSC.OnlineCourse.Data.Entities;
 using LSC.OnlineCourse.Service;
+using LSC.RestaurantTableBookingApp.Service;
 using Microsoft.ApplicationInsights.Extensibility;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Diagnostics;
+using Microsoft.AspNetCore.Diagnostics.HealthChecks;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Diagnostics.HealthChecks;
 using Microsoft.Identity.Web;
 using Microsoft.IdentityModel.Logging;
 using Serilog;
@@ -33,6 +36,18 @@ namespace LSC.OnlineCourse.API
                 #region Service Configuration
                 var builder = WebApplication.CreateBuilder(args);
                 var configuration = builder.Configuration;
+
+                // Add services to the container.
+                // Add services to the container.
+                builder.Services.AddHealthChecks()
+                    .AddSqlServer(
+                        connectionString: configuration.GetConnectionString("DbContext"),
+                        healthQuery: "SELECT 1;", // Query to check database health.
+                        name: "sqlserver",
+                        failureStatus: HealthStatus.Degraded, // Degraded health status if the check fails.
+                        tags: new[] { "db", "sql" })
+                    .AddCheck("Memory", new PrivateMemoryHealthCheck(1024 * 1024 * 1024)); // A custom health check for memory.
+
 
                 builder.Services.AddApplicationInsightsTelemetry();
 
@@ -134,6 +149,18 @@ namespace LSC.OnlineCourse.API
                 builder.Services.AddTransient<RequestBodyLoggingMiddleware>();
                 builder.Services.AddTransient<ResponseBodyLoggingMiddleware>();
                 builder.Services.AddScoped<IUserClaims, UserClaims>();
+                builder.Services.AddScoped<IEnrollmentRepository, EnrollmentRepository>();
+                builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
+                builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
+                builder.Services.AddScoped<IReviewService, ReviewService>();
+                builder.Services.AddScoped<IEmailNotification, EmailNotification>();    
+              
+
+                // Register AzureBlobStorageService
+                builder.Services.AddScoped<IAzureBlobStorageService, AzureBlobStorageService>();
+
+                builder.Services.AddScoped<IUserProfileRepository, UserProfileRepository>();
+                builder.Services.AddScoped<IUserProfileService, UserProfileService>();
 
                 builder.Services.AddEndpointsApiExplorer();
                 builder.Services.AddSwaggerGen();
@@ -164,7 +191,7 @@ namespace LSC.OnlineCourse.API
                 app.UseMiddleware<RequestBodyLoggingMiddleware>();
                 app.UseMiddleware<ResponseBodyLoggingMiddleware>();
 
-                if (app.Environment.IsDevelopment())
+                //if (app.Environment.IsDevelopment())
                 {
                     app.UseSwagger();
                     app.UseSwaggerUI();
@@ -176,6 +203,36 @@ namespace LSC.OnlineCourse.API
                 app.UseAuthentication();
                 app.UseAuthorization();
                 #endregion  AD B2C
+
+                // Top-level route mapping for health checks
+                app.MapHealthChecks("/health", new HealthCheckOptions
+                {                   
+                    ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
+                });
+
+                // Liveness probe
+                app.MapHealthChecks("/health/live", new HealthCheckOptions
+                {
+                    Predicate = _ => false, // No specific checks, just indicates the app is live
+                    ResponseWriter = async (context, report) =>
+                    {
+                        context.Response.ContentType = "application/json";
+                        var json = new
+                        {
+                            status = report.Status.ToString(),
+                            description = "Liveness check - the app is up"
+                        };
+                        await context.Response.WriteAsJsonAsync(json);
+                    }
+                });
+
+                // Readiness probe
+                app.MapHealthChecks("/health/ready", new HealthCheckOptions
+                {
+                    Predicate = check => check.Tags.Contains("ready"), // Only run checks tagged as "ready"
+                    ResponseWriter = HealthCheckResponseWriter.WriteJsonResponse
+                });
+
 
                 app.MapControllers();
 

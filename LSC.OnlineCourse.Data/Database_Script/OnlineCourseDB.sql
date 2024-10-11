@@ -445,7 +445,6 @@ where CourseId<>1
     UserId INT NOT NULL, 
 	Topic NVARCHAR(50) NOT NULL, 
 	SubTopic NVARCHAR(50) NOT NULL, 
-    RequestStatus NVARCHAR(50) NOT NULL, 
 	ShortTitle NVARCHAR(200) NOT NULL, 
 	RequestDescription NVARCHAR(4000) NOT NULL, 
 	Response NVARCHAR(4000) NULL, 
@@ -454,14 +453,17 @@ where CourseId<>1
     CONSTRAINT FK_VideoRequest_UserProfile FOREIGN KEY (UserId) REFERENCES UserProfile(UserId)
 );
 
+go
 
--- below is used to trigger a azure function when a table's record modified or added
---https://learn.microsoft.com/en-us/azure/azure-functions/functions-bindings-azure-sql-trigger?tabs=isolated-process%2Cpython-v2%2Cportal&pivots=programming-language-csharp
-Go
 ALTER DATABASE OnlineCourseDB
 SET CHANGE_TRACKING = ON
 (CHANGE_RETENTION = 2 DAYS, AUTO_CLEANUP = ON);
 
 ALTER TABLE [dbo].[VideoRequest]
 ENABLE CHANGE_TRACKING;
--- ends here
+
+go
+
+ALTER TABLE dbo.UserProfile ADD ProfilePictureUrl  NVARCHAR(500) NULL
+
+ALTER TABLE dbo.Course ADD Thumbnail  NVARCHAR(500) NULL

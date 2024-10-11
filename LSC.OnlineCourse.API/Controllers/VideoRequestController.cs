@@ -76,6 +76,9 @@ namespace LSC.OnlineCourse.API.Controllers
         {
             try
             {
+                //if a user who knows this end point and not having role as admin can directly hit. this is a 
+                //security issue. we will see how we can fix this in security video in this series.
+                // we have now restricted from UI app but backend is not protected.
                 var updatedVideoRequest = await _videoRequestService.UpdateAsync(id, model);
                 //await _videoRequestService.SendVideoRequestAckEmail(model); // we are using SQLTrigger to send email automatically
                 return Ok(updatedVideoRequest);

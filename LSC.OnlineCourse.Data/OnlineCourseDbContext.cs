@@ -201,6 +201,7 @@ public partial class OnlineCourseDbContext : DbContext
             entity.Property(e => e.Email).HasMaxLength(100);
             entity.Property(e => e.FirstName).HasMaxLength(50);
             entity.Property(e => e.LastName).HasMaxLength(50);
+            entity.Property(e=>e.ProfilePictureUrl).HasMaxLength(500);
         });
 
         modelBuilder.Entity<UserRole>(entity =>

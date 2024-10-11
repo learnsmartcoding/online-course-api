@@ -18,7 +18,9 @@ namespace LSC.OnlineCourse.Core.Models
 
         public string Email { get; set; } = null!;
 
-        public string AdObjId { get; set; } = null!;
+        public string AdObjId { get; set; } = null!; 
+        public string? ProfilePictureUrl { get; set; }
+        public string? Bio { get; set; }
         public required List<UserRoleModel> UserRoleModel { get; set; }
     }
 
@@ -37,4 +39,7 @@ namespace LSC.OnlineCourse.Core.Models
 
         public string RoleName { get; set; } = null!;
     }
+
+   
+
 }
