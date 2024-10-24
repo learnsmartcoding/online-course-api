@@ -1,3 +1,4 @@
+using LSC.OnlineCourse.API.Chat;
 using LSC.OnlineCourse.API.Common;
 using LSC.OnlineCourse.API.Middlewares;
 using LSC.OnlineCourse.Data;
@@ -125,12 +126,16 @@ namespace LSC.OnlineCourse.API
 
 
                 // In production, modify this with the actual domains you want to allow
-                builder.Services.AddCors(o => o.AddPolicy("default", builder =>
+                builder.Services.AddCors(options =>
                 {
-                    builder.AllowAnyOrigin()
-                           .AllowAnyMethod()
-                           .AllowAnyHeader();
-                }));
+                    options.AddPolicy("default", policy =>
+                    {
+                        policy.WithOrigins("http://localhost:4200", "https://smartlearnbykarthik.azurewebsites.net") // Corrected frontend URL without trailing slash
+                              .AllowAnyHeader()
+                              .AllowAnyMethod()
+                              .AllowCredentials();  // Required for SignalR
+                    });
+                });
 
                 // Add services to the container.
 
@@ -153,8 +158,8 @@ namespace LSC.OnlineCourse.API
                 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
                 builder.Services.AddScoped<IReviewRepository, ReviewRepository>();
                 builder.Services.AddScoped<IReviewService, ReviewService>();
-                builder.Services.AddScoped<IEmailNotification, EmailNotification>();    
-              
+                builder.Services.AddScoped<IEmailNotification, EmailNotification>();
+                builder.Services.AddSignalR();
 
                 // Register AzureBlobStorageService
                 builder.Services.AddScoped<IAzureBlobStorageService, AzureBlobStorageService>();
@@ -203,6 +208,10 @@ namespace LSC.OnlineCourse.API
                 app.UseAuthentication();
                 app.UseAuthorization();
                 #endregion  AD B2C
+
+                // SignalR middleware to map the ChatHub
+                app.MapHub<ChatHub>("/chathub");
+
 
                 // Top-level route mapping for health checks
                 app.MapHealthChecks("/health", new HealthCheckOptions
